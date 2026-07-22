@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { simpleGit, type SimpleGit, ResetMode } from "simple-git";
-import { getToken } from "./config.js";
+import { getToken, getLogin } from "./config.js";
 
 export class GittoGitError extends Error {}
 export class ConflictError extends GittoGitError {
@@ -71,7 +71,12 @@ function appendToGitignore(cwd: string, patterns: string[]): void {
 
 function authConfig(): string[] {
   const token = getToken();
-  return token ? [`http.extraheader=AUTHORIZATION: bearer ${token}`] : [];
+  if (!token) return [];
+  // GitHub rejects the `bearer` scheme for device-flow user tokens over git's
+  // smart HTTP transport ("remote: invalid credentials"); Basic auth with the
+  // token as the password is what it actually accepts.
+  const basic = Buffer.from(`${getLogin() ?? "x-access-token"}:${token}`).toString("base64");
+  return [`http.extraheader=AUTHORIZATION: basic ${basic}`];
 }
 
 function git(cwd: string = process.cwd()): SimpleGit {

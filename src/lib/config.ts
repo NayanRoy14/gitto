@@ -45,3 +45,7 @@ export function clearConfig(): void {
 export function getToken(): string | undefined {
   return readConfig().token;
 }
+
+export function getLogin(): string | undefined {
+  return readConfig().login;
+}
