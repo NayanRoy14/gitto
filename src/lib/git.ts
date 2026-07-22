@@ -287,6 +287,16 @@ export async function save(
 
   try {
     const status = await repo.status();
+
+    if (op === "merge") {
+      if (status.conflicted.length > 0) {
+        throw new ConflictError("Combining", status.conflicted);
+      }
+      await repo.add(["-A"]);
+      await repo.commit(message || "Merge");
+      return "Finished combining.";
+    }
+
     if (status.files.length === 0) {
       return "Nothing to save — no changes since your last save.";
     }
