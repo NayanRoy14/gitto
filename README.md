@@ -32,7 +32,7 @@ another line to work with).
 ## Install
 
 ```
-npm install -g @nayanroy14/gitto
+npm install -g @nayanroy/gitto
 ```
 
 This gives you the `gitto` command. `login` ships with gitto's own GitHub OAuth

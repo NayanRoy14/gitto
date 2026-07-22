@@ -1,5 +1,5 @@
 {
-  "name": "@nayanroy14/gitto",
+  "name": "@nayanroy/gitto",
   "version": "0.1.0",
   "description": "Plain-language Git & GitHub CLI",
   "type": "module",
