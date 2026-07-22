@@ -10,13 +10,20 @@ import { createLineReader, type LineReader } from "./lib/lineReader.js";
 
 const isInteractive = Boolean(process.stdin.isTTY);
 
+// A network call (via Octokit/fetch) followed immediately by process.exit() can
+// crash Node on Windows ("Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)")
+// while the keep-alive socket is still closing. A short delay lets it finish first.
+function exitSoon(code: number): void {
+  setTimeout(() => process.exit(code), 150);
+}
+
 async function runOnce(handler: (rl: LineReader) => Promise<void>): Promise<void> {
   const rl = createLineReader();
   try {
     await handler(rl);
   } finally {
     rl.close();
-    process.exit(0);
+    exitSoon(0);
   }
 }
 
@@ -25,7 +32,11 @@ function inkOrRepl(command: string, handler: (rl: LineReader) => Promise<void>) 
     if (isInteractive) {
       render(<App command={command as never} />);
     } else {
-      runOnce(handler);
+      runOnce(async (rl) => {
+        if (await repl.ensureRepoSetup(rl)) {
+          await handler(rl);
+        }
+      });
     }
   };
 }
@@ -41,7 +52,7 @@ program.action(() => {
   if (isInteractive) {
     render(<Palette />);
   } else {
-    runRepl().then(() => process.exit(0));
+    runRepl().then(() => exitSoon(0));
   }
 });
 
@@ -61,22 +72,22 @@ program
   .command("download <url> [destination]")
   .description("Copy a GitHub project to your computer")
   .action((url: string, destination?: string) => {
-    render(<App command="download" url={url} destination={destination} />);
+    if (isInteractive) {
+      render(<App command="download" url={url} destination={destination} />);
+    } else {
+      runOnce(() => repl.downloadArgs(url, destination));
+    }
   });
 
 program
   .command("status")
   .description("See what's changed")
-  .action(() => {
-    render(<App command="status" />);
-  });
+  .action(inkOrRepl("status", repl.status));
 
 program
   .command("sync")
   .description("Bring down the latest changes")
-  .action(() => {
-    render(<App command="sync" />);
-  });
+  .action(inkOrRepl("sync", repl.sync));
 
 program
   .command("save")
@@ -102,9 +113,7 @@ program
 program
   .command("history")
   .description("See what's been saved")
-  .action(() => {
-    render(<App command="history" />);
-  });
+  .action(inkOrRepl("history", repl.history));
 
 program
   .command("undo")
@@ -119,9 +128,7 @@ program
 program
   .command("stash")
   .description("Set changes aside for later, or bring them back")
-  .action(() => {
-    render(<App command="stash" />);
-  });
+  .action(inkOrRepl("stash", repl.stash));
 
 program
   .command("request")
@@ -136,9 +143,7 @@ program
 program
   .command("fork")
   .description("Copy this project to your own GitHub")
-  .action(() => {
-    render(<App command="fork" />);
-  });
+  .action(inkOrRepl("fork", repl.fork));
 
 program
   .command("collab")

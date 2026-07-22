@@ -262,7 +262,12 @@ export async function getSavePreflight(
   onlyPaths: string[] = []
 ): Promise<SavePreflight> {
   const repo = git(cwd);
-  const status = await repo.status();
+  let status;
+  try {
+    status = await repo.status();
+  } catch (err) {
+    throw new GittoGitError(translateError(err));
+  }
   const paths = scopeToOnlyPaths(
     status.files.map((f) => f.path),
     onlyPaths
@@ -284,6 +289,15 @@ export async function findTrackedSecrets(cwd: string = process.cwd()): Promise<s
       .filter((f) => f.length > 0 && isSensitivePath(f));
   } catch {
     return [];
+  }
+}
+
+function hasConflictMarkers(cwd: string, filePath: string): boolean {
+  try {
+    const content = fs.readFileSync(path.join(cwd, filePath), "utf8");
+    return /^<{7}(\s|$)/m.test(content) || /^={7}$/m.test(content) || /^>{7}(\s|$)/m.test(content);
+  } catch {
+    return false;
   }
 }
 
@@ -318,8 +332,12 @@ export async function save(
     const status = await repo.status();
 
     if (op === "merge") {
-      if (status.conflicted.length > 0) {
-        throw new ConflictError("Combining", status.conflicted);
+      // status.conflicted reflects git's index (stage 1/2/3 entries), which only
+      // clears via `git add` — it stays stale even after the user fixes the file's
+      // content, so check the actual file for leftover conflict markers instead.
+      const stillConflicted = status.conflicted.filter((f) => hasConflictMarkers(cwd, f));
+      if (stillConflicted.length > 0) {
+        throw new ConflictError("Combining", stillConflicted);
       }
       await repo.add(["-A"]);
       await repo.commit(message || "Merge");

@@ -76,6 +76,18 @@ async function pickFromList(rl: RL, items: string[], prompt: string): Promise<st
   return answer;
 }
 
+/** Mirrors App.tsx's "repo-prompt" step for commands run non-interactively (piped/scripted). */
+export async function ensureRepoSetup(rl: RL): Promise<boolean> {
+  if (await isGitRepo()) return true;
+  if (!(await confirmYes(rl, "This folder isn't a git project yet. Set one up?"))) {
+    say("Cancelled.");
+    return false;
+  }
+  await initRepo();
+  ok("Set up.");
+  return true;
+}
+
 async function replLogin(): Promise<void> {
   try {
     const { login: username } = await login((info) => {
@@ -187,6 +199,10 @@ async function replDownload(rl: RL): Promise<void> {
     return;
   }
   await safely(async () => `Downloaded into ${(await download(url)).path}.`);
+}
+
+async function replDownloadArgs(url: string, destination?: string): Promise<void> {
+  await safely(async () => `Downloaded into ${(await download(url, destination)).path}.`);
 }
 
 async function replBranch(rl: RL): Promise<void> {
@@ -526,6 +542,14 @@ export async function runRepl(): Promise<void> {
 }
 
 export const repl = {
+  ensureRepoSetup,
+  login: replLogin,
+  status: replStatus,
+  sync: replSync,
+  stash: replStash,
+  history: replHistory,
+  fork: replFork,
+  downloadArgs: replDownloadArgs,
   save: replSave,
   upload: replUpload,
   branch: replBranch,

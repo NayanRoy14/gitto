@@ -8,6 +8,15 @@ import { getToken, writeConfig } from "./config.js";
 const DEFAULT_CLIENT_ID = "Ov23liS0REKn4IEdD0bc";
 const CLIENT_ID = process.env.GITTO_GITHUB_CLIENT_ID ?? DEFAULT_CLIENT_ID;
 
+// Octokit logs deprecation notices and warnings straight to the console by
+// default; gitto translates every GitHub error itself, so silence Octokit's
+// own logging to keep raw API output from ever reaching the user. Deprecation
+// notices specifically are logged by @octokit/request via `request.log`, a
+// separate option from the top-level `log` used by Octokit's own internals —
+// both need to be silenced.
+const silentLog = { debug() {}, info() {}, warn() {}, error() {} };
+const octokitSilenceOptions = { log: silentLog, request: { log: silentLog } };
+
 export class NotAuthenticatedError extends Error {
   constructor() {
     super("Not authenticated");
@@ -42,7 +51,7 @@ export async function login(
   });
 
   const { token } = await auth({ type: "oauth" });
-  const octokit = new Octokit({ auth: token });
+  const octokit = new Octokit({ auth: token, ...octokitSilenceOptions });
   const { data: user } = await octokit.users.getAuthenticated();
 
   writeConfig({ token, login: user.login });
@@ -56,5 +65,5 @@ export function isLoggedIn(): boolean {
 export function getOctokit(): Octokit {
   const token = getToken();
   if (!token) throw new NotAuthenticatedError();
-  return new Octokit({ auth: token });
+  return new Octokit({ auth: token, ...octokitSilenceOptions });
 }
