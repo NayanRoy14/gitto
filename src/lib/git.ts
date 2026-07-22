@@ -132,6 +132,9 @@ function translateError(err: unknown): string {
   if (/does not appear to be a git repository|not a git repository/i.test(message)) {
     return "This folder isn't connected to a GitHub project.";
   }
+  if (/without .?workflow.? scope|refusing to allow an oauth app/i.test(message)) {
+    return "GitHub blocked this because it touches a file in .github/workflows/ and gitto's login doesn't have permission to manage workflows yet. Run `gitto login` again to grant that, then upload once more.";
+  }
   if (/non-fast-forward|fetch first|rejected/i.test(message)) {
     return "Someone else has newer changes on GitHub. Update your local copy before uploading again.";
   }

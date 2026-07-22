@@ -41,7 +41,9 @@ export async function login(
   const auth = createOAuthDeviceAuth({
     clientType: "oauth-app",
     clientId: CLIENT_ID,
-    scopes: ["repo", "read:user"],
+    // "workflow" is required to push changes to .github/workflows/*; without it
+    // GitHub silently rejects any push that touches a workflow file.
+    scopes: ["repo", "read:user", "workflow"],
     onVerification(verification) {
       onVerification({
         userCode: verification.user_code,
