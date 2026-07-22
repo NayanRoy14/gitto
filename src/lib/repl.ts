@@ -117,10 +117,20 @@ async function replSave(rl: RL): Promise<void> {
     await safely(() => save(""));
     return;
   }
+  if (op === "merge") {
+    const message = (await rl.question("What did you change? ")).trim() || "Merge";
+    await safely(() => save(message));
+    return;
+  }
+
+  const filesInput = (
+    await rl.question("Save everything, or just some files/folders? (leave blank for everything) ")
+  ).trim();
+  const onlyPaths = filesInput ? filesInput.split(/\s+/) : [];
 
   let preflight;
   try {
-    preflight = await getSavePreflight();
+    preflight = await getSavePreflight(undefined, onlyPaths);
   } catch (err) {
     fail(err);
     return;
@@ -144,7 +154,7 @@ async function replSave(rl: RL): Promise<void> {
   }
 
   const message = (await rl.question("What did you change? ")).trim() || "Update";
-  await safely(() => save(message, undefined, exclude));
+  await safely(() => save(message, undefined, exclude, onlyPaths));
 }
 
 async function replSync(): Promise<void> {

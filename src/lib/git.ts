@@ -234,20 +234,43 @@ export async function getStatus(cwd: string = process.cwd()): Promise<PlainStatu
   };
 }
 
+/** Normalizes a user-typed path (Windows separators, trailing slash) for comparison against git's paths. */
+function normalizeGivenPath(p: string): string {
+  return p.trim().replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/, "");
+}
+
+/** True if `filePath` (a git-relative path) is one of `onlyPaths`, or lives inside one of them. */
+function matchesOnlyPaths(filePath: string, onlyPaths: string[]): boolean {
+  return onlyPaths.some((raw) => {
+    const target = normalizeGivenPath(raw);
+    return target.length > 0 && (filePath === target || filePath.startsWith(`${target}/`));
+  });
+}
+
+function scopeToOnlyPaths(paths: string[], onlyPaths: string[]): string[] {
+  return onlyPaths.length === 0 ? paths : paths.filter((p) => matchesOnlyPaths(p, onlyPaths));
+}
+
 export interface SavePreflight {
   hardBlocked: string[];
   flagged: string[];
   hasChanges: boolean;
 }
 
-export async function getSavePreflight(cwd: string = process.cwd()): Promise<SavePreflight> {
+export async function getSavePreflight(
+  cwd: string = process.cwd(),
+  onlyPaths: string[] = []
+): Promise<SavePreflight> {
   const repo = git(cwd);
   const status = await repo.status();
-  const paths = status.files.map((f) => f.path);
+  const paths = scopeToOnlyPaths(
+    status.files.map((f) => f.path),
+    onlyPaths
+  );
   return {
     hardBlocked: paths.filter(isHardBlocked),
     flagged: paths.filter(isSoftExcluded),
-    hasChanges: status.files.length > 0,
+    hasChanges: paths.length > 0,
   };
 }
 
@@ -267,7 +290,8 @@ export async function findTrackedSecrets(cwd: string = process.cwd()): Promise<s
 export async function save(
   message: string,
   cwd: string = process.cwd(),
-  excludePaths: string[] = []
+  excludePaths: string[] = [],
+  onlyPaths: string[] = []
 ): Promise<string> {
   const repo = git(cwd);
   const op = await getInProgressOperation(cwd);
@@ -302,11 +326,17 @@ export async function save(
       return "Finished combining.";
     }
 
-    if (status.files.length === 0) {
-      return "Nothing to save — no changes since your last save.";
+    const scopedPaths = scopeToOnlyPaths(
+      status.files.map((f) => f.path),
+      onlyPaths
+    );
+    if (scopedPaths.length === 0) {
+      return onlyPaths.length > 0
+        ? "Nothing to save — no changes found in the files or folders you gave."
+        : "Nothing to save — no changes since your last save.";
     }
 
-    const hardBlocked = status.files.map((f) => f.path).filter(isHardBlocked);
+    const hardBlocked = scopedPaths.filter(isHardBlocked);
     if (hardBlocked.length > 0) {
       throw new SensitiveFilesError(hardBlocked);
     }
@@ -315,7 +345,7 @@ export async function save(
       appendToGitignore(cwd, excludePaths);
     }
 
-    const pathsToAdd = status.files.map((f) => f.path).filter((p) => !excludePaths.includes(p));
+    const pathsToAdd = scopedPaths.filter((p) => !excludePaths.includes(p));
     if (pathsToAdd.length === 0) {
       return "Nothing to save — everything changed is excluded.";
     }

@@ -22,6 +22,10 @@ another line to work with).
   or `undo` to cancel — no new commands to learn.
 - All git/GitHub errors are translated to plain language — no raw git output or
   raw API errors ever reach the user.
+- `save` asks which files or folders to save before asking what changed — leave
+  it blank to save everything, or list specific paths to save just those.
+- `upload` creates the GitHub repo for you (asking public or private) the first
+  time you upload a project that isn't connected to one yet.
 
 ## Setup
 
