@@ -1,6 +1,6 @@
 import { createLineReader, type LineReader } from "./lineReader.js";
 import { login, isLoggedIn } from "./auth.js";
-import { configExists } from "./config.js";
+import { configExists, clearConfig } from "./config.js";
 import {
   isGitRepo,
   initRepo,
@@ -97,6 +97,19 @@ async function replLogin(): Promise<void> {
     ok(`Logged in as ${username}.`);
   } catch (err) {
     fail(err);
+  }
+}
+
+async function replLogout(rl: RL): Promise<void> {
+  if (!isLoggedIn()) {
+    say("You're not logged in.");
+    return;
+  }
+  if (await confirmYes(rl, "Disconnect your GitHub account?")) {
+    clearConfig();
+    ok("Logged out.");
+  } else {
+    say("Cancelled.");
   }
 }
 
@@ -544,6 +557,7 @@ export async function runRepl(): Promise<void> {
 export const repl = {
   ensureRepoSetup,
   login: replLogin,
+  logout: replLogout,
   status: replStatus,
   sync: replSync,
   stash: replStash,

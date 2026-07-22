@@ -7,6 +7,7 @@ import { isLoggedIn } from "../lib/auth.js";
 import { getRepoState, initRepo, type RepoState } from "../lib/git.js";
 import { buildMenu, type CommandKey } from "../lib/menu.js";
 import { Login } from "./Login.js";
+import { Logout } from "./Logout.js";
 import { Upload } from "./Upload.js";
 import { DownloadFlow } from "./DownloadFlow.js";
 import { Sync } from "./Sync.js";
@@ -172,6 +173,8 @@ export function Palette() {
       return <Tag onDone={refresh} />;
     case "login":
       return <Login onComplete={refresh} />;
+    case "logout":
+      return <Logout onDone={refresh} />;
     default:
       return null;
   }

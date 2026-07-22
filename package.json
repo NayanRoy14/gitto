@@ -1,5 +1,5 @@
 {
-  "name": "gitto",
+  "name": "@nayanroy14/gitto",
   "version": "0.1.0",
   "description": "Plain-language Git & GitHub CLI",
   "type": "module",
@@ -8,6 +8,16 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NayanRoy14/gitto.git"
+  },
+  "homepage": "https://github.com/NayanRoy14/gitto#readme",
+  "bugs": "https://github.com/NayanRoy14/gitto/issues",
+  "keywords": [
+    "git",
+    "github",
+    "cli"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "bin": {
     "gitto": "dist/cli.js"
@@ -21,6 +31,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "dev": "tsx src/cli.tsx",
     "start": "node dist/cli.js"
   },

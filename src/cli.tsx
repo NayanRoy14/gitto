@@ -3,6 +3,7 @@ import React from "react";
 import { render } from "ink";
 import { Command } from "commander";
 import { Login } from "./commands/Login.js";
+import { Logout } from "./commands/Logout.js";
 import { App } from "./commands/App.js";
 import { Palette } from "./commands/Palette.js";
 import { runRepl, repl } from "./lib/repl.js";
@@ -61,6 +62,17 @@ program
   .description("Connect your GitHub account")
   .action(() => {
     render(<Login />);
+  });
+
+program
+  .command("logout")
+  .description("Disconnect your GitHub account")
+  .action(() => {
+    if (isInteractive) {
+      render(<Logout />);
+    } else {
+      runOnce(repl.logout);
+    }
   });
 
 program

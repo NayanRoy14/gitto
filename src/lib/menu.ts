@@ -21,6 +21,7 @@ export type CommandKey =
   | "pick"
   | "tag"
   | "login"
+  | "logout"
   | "quit";
 
 export interface MenuItem {
@@ -83,6 +84,9 @@ export function buildMenu(state: RepoState, loggedIn: boolean): MenuItem[] {
     label: "login",
     description: loggedIn ? "Switch GitHub account" : "Connect your GitHub account",
   });
+  if (loggedIn) {
+    items.push({ key: "logout", label: "logout", description: "Disconnect your GitHub account" });
+  }
   items.push({ key: "quit", label: "quit", description: "Exit gitto" });
 
   return items;

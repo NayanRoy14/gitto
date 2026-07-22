@@ -6,9 +6,9 @@ Plain-language Git & GitHub — no jargon required.
 
 ## Commands
 
-`login`, `upload`, `download <url> [destination]`, `status`, `sync`, `save`,
-`branch` (alias `new-line`), `switch`, `combine`, `history`, `undo`, `trash`,
-`stash`, `request`, `issue`, `fork`, `collab`, `rebase`, `pick`, `tag`.
+`login`, `logout`, `upload`, `download <url> [destination]`, `status`, `sync`,
+`save`, `branch` (alias `new-line`), `switch`, `combine`, `history`, `undo`,
+`trash`, `stash`, `request`, `issue`, `fork`, `collab`, `rebase`, `pick`, `tag`.
 
 Run `gitto` with no arguments to open the `/` command palette — a context-aware
 menu that only shows actions that currently apply (e.g. `save` is hidden until
@@ -29,21 +29,25 @@ another line to work with).
 - `upload` creates the GitHub repo for you (asking public or private) the first
   time you upload a project that isn't connected to one yet.
 
-## Setup
+## Install
+
+```
+npm install -g @nayanroy14/gitto
+```
+
+This gives you the `gitto` command. `login` ships with gitto's own GitHub OAuth
+App (Device Flow enabled) — no setup required. To use your own OAuth App
+instead, set `GITTO_GITHUB_CLIENT_ID`.
+
+## Development
+
+Working on gitto itself, from a clone of this repo:
 
 ```
 npm install
 npm run build
 npm link   # or: node dist/cli.js <command>
-```
-
-`login` ships with gitto's own GitHub OAuth App (Device Flow enabled) — no setup
-required. To use your own OAuth App instead, set `GITTO_GITHUB_CLIENT_ID`.
-
-## Development
-
-```
-npm run dev -- status   # runs src/cli.tsx directly via tsx
+npm run dev -- status   # runs src/cli.tsx directly via tsx, no build step
 ```
 
 ## Architecture
