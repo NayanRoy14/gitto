@@ -64,4 +64,5 @@ npm run dev -- status   # runs src/cli.tsx directly via tsx
   (`getRepoState()` in `lib/git.ts`)
 - `src/ui/*.tsx` — reusable prompts (`Select`, `Prompt`, `Confirm`, `Result`,
   `Task`) shared across every command
-with ❤️ from Nayan
+
+###### with ❤️ from Nayan
