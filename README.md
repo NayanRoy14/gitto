@@ -53,13 +53,27 @@ npm run dev -- status   # runs src/cli.tsx directly via tsx, no build step
 ## Architecture
 
 - `src/lib/config.ts` — token storage at `~/.gitto/config.json` (mode 0600)
-- `src/lib/auth.ts` — device-flow login, Octokit client
-- `src/lib/git.ts` — simple-git wrapper; injects the stored GitHub token as an
-  `Authorization` header for `push`/`clone` (via simple-git's per-command `config`
-  option, never written into repo config); detects in-progress merge/rebase/
-  cherry-pick state; translates git errors to plain language
-- `src/lib/github.ts` — Octokit-backed GitHub actions (PR/issue/fork/collaborator),
-  deriving owner/repo from the `origin` remote
+- `src/lib/auth.ts` — device-flow login (scopes: `repo`, `read:user`,
+  `workflow` — the last is required to push changes under `.github/workflows/`),
+  Octokit client with its own logging silenced (gitto translates every error itself)
+- `src/lib/git.ts` — simple-git wrapper; injects the stored GitHub token as a
+  Basic-auth `Authorization` header for `push`/`clone` (via simple-git's
+  per-command `config` option, never written into repo config — GitHub rejects
+  a `bearer` scheme for these tokens over git's HTTP transport); detects
+  in-progress merge/rebase/cherry-pick state; translates git errors to plain
+  language
+- `src/lib/github.ts` — Octokit-backed GitHub actions (repo creation, PR/issue/
+  fork/collaborator), deriving owner/repo from the `origin` remote
+- `src/lib/repl.ts` — plain-text fallback for every command, used whenever
+  stdin isn't a TTY (piped/scripted input, or a terminal without arrow-key
+  support): mirrors the Ink flows one-for-one with `rl.question()`-driven
+  prompts instead of interactive components
+- `src/lib/lineReader.ts` — readline replacement used by `repl.ts`; Node's
+  built-in readline drops lines on piped stdin when a second `question()` is
+  issued after the first resolves, so this queues arrived-but-unasked-for
+  lines itself
+- `src/lib/menu.ts` — builds the `/` palette's command list from live repo
+  state (`buildMenu()`), shared by both `Palette.tsx` and `repl.ts`'s `help`
 - `src/commands/*.tsx` — Ink UI per command; each takes an optional
   `onDone?: (ok: boolean) => void` — omitted when run standalone (exits on
   completion), supplied by the palette to pause for acknowledgment and loop
