@@ -1,5 +1,7 @@
 # gitto
 
+[![CI](https://github.com/NayanRoy14/gitto/actions/workflows/ci.yml/badge.svg)](https://github.com/NayanRoy14/gitto/actions/workflows/ci.yml)
+
 Plain-language Git & GitHub — no jargon required.
 
 ## Commands

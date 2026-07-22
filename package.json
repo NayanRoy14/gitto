@@ -3,11 +3,18 @@
   "version": "0.1.0",
   "description": "Plain-language Git & GitHub CLI",
   "type": "module",
+  "license": "MIT",
+  "author": "NayanRoy14",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NayanRoy14/gitto.git"
+  },
   "bin": {
     "gitto": "dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
