@@ -19,6 +19,10 @@ updates:
       # major upgrade, not as an automated bump.
       - dependency-name: ink
         update-types: ["version-update:semver-major"]
+      # typescript-eslint peer-supports typescript <6.1 only; drop this once
+      # it accepts newer TypeScript majors.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
