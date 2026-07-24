@@ -81,3 +81,9 @@ Internal-only changes (tests, CI, tooling) don't need one.
 Merged changesets accumulate until the "Version Packages" PR (opened
 automatically by `.github/workflows/release.yml`) is merged, which publishes
 the new version to npm.
+
+That workflow authenticates as a real account via the `RELEASE_PAT` secret
+(fine-grained, scoped to just this repo, Contents + Pull requests: read/write)
+rather than the default `GITHUB_TOKEN` — PRs authored by `github-actions[bot]`
+now need manual approval to run their own CI, even on non-fork branches, which
+would defeat the point of automating releases.
