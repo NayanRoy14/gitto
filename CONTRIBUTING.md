@@ -18,7 +18,7 @@ npm run build
 npm test
 ```
 
-CI runs all four (lint and format on Node 20; build+test across Node 18/20/22),
+CI runs all four (lint and format on Node 20; build+test across Node 20/22/24),
 so it's faster to catch failures locally first.
 
 ## Adding or changing a command
