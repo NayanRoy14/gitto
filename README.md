@@ -1,8 +1,15 @@
 # gitto
 
 [![CI](https://github.com/NayanRoy14/gitto/actions/workflows/ci.yml/badge.svg)](https://github.com/NayanRoy14/gitto/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@nayanroy/gitto)](https://www.npmjs.com/package/@nayanroy/gitto)
+[![license](https://img.shields.io/npm/l/@nayanroy/gitto)](LICENSE)
 
 Plain-language Git & GitHub — no jargon required.
+
+`gitto` replaces `git add`/`commit`/`push`/`pull`/`branch`/`merge`/`rebase`
+with words like `save`, `upload`, `sync`, `branch`, `combine`, and `replay` —
+and every git or GitHub error is translated into a sentence you can act on,
+never raw command output.
 
 ## Commands
 
@@ -23,11 +30,17 @@ another line to work with).
   verbs as everything else: fix the conflicting files, then `save` to continue,
   or `undo` to cancel — no new commands to learn.
 - All git/GitHub errors are translated to plain language — no raw git output or
-  raw API errors ever reach the user.
+  raw API errors ever reach the user. This includes network trouble: a stalled
+  connection times out with a clear message instead of hanging forever, and
+  GitHub rate limits are reported as what they are, not mistaken for a login
+  problem.
 - `save` asks which files or folders to save before asking what changed — leave
   it blank to save everything, or list specific paths to save just those.
 - `upload` creates the GitHub repo for you (asking public or private) the first
   time you upload a project that isn't connected to one yet.
+- Works the same piped or scripted (no arrow-key terminal? no problem) — every
+  command has a plain-text fallback that asks the same questions with typed
+  answers instead of an interactive menu.
 
 ## Install
 
@@ -35,9 +48,9 @@ another line to work with).
 npm install -g @nayanroy/gitto
 ```
 
-This gives you the `gitto` command. `login` ships with gitto's own GitHub OAuth
-App (Device Flow enabled) — no setup required. To use your own OAuth App
-instead, set `GITTO_GITHUB_CLIENT_ID`.
+Requires Node 20 or newer. This gives you the `gitto` command. `login` ships
+with gitto's own GitHub OAuth App (Device Flow enabled) — no setup required.
+To use your own OAuth App instead, set `GITTO_GITHUB_CLIENT_ID`.
 
 ## Development
 
@@ -54,7 +67,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for testing, linting, and PR guidelines.
 
 ## Architecture
 
-- `src/lib/config.ts` — token storage at `~/.gitto/config.json` (mode 0600)
+- `src/lib/config.ts` — token storage at `~/.gitto/config.json` (mode 0600,
+  written atomically so a crash mid-write can't corrupt it)
 - `src/lib/auth.ts` — device-flow login (scopes: `repo`, `read:user`,
   `workflow` — the last is required to push changes under `.github/workflows/`),
   Octokit client with its own logging silenced (gitto translates every error itself)
@@ -62,10 +76,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for testing, linting, and PR guidelines.
   Basic-auth `Authorization` header for `push`/`clone` (via simple-git's
   per-command `config` option, never written into repo config — GitHub rejects
   a `bearer` scheme for these tokens over git's HTTP transport); detects
-  in-progress merge/rebase/cherry-pick state; translates git errors to plain
-  language
+  in-progress merge/rebase/cherry-pick state; times out a stalled network
+  operation instead of hanging forever; translates git errors to plain language
 - `src/lib/github.ts` — Octokit-backed GitHub actions (repo creation, PR/issue/
-  fork/collaborator), deriving owner/repo from the `origin` remote
+  fork/collaborator), deriving owner/repo from the `origin` remote; distinguishes
+  GitHub rate limiting from a rejected-credentials error
 - `src/lib/repl.ts` — plain-text fallback for every command, used whenever
   stdin isn't a TTY (piped/scripted input, or a terminal without arrow-key
   support): mirrors the Ink flows one-for-one with `rl.question()`-driven
@@ -86,5 +101,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for testing, linting, and PR guidelines.
   (`getRepoState()` in `lib/git.ts`)
 - `src/ui/*.tsx` — reusable prompts (`Select`, `Prompt`, `Confirm`, `Result`,
   `Task`) shared across every command
+
+Every file above has test coverage — see [CONTRIBUTING.md](CONTRIBUTING.md#tests)
+for how the Ink UI, the plain-text fallback, and the underlying git/GitHub
+logic are each tested.
 
 ###### with ❤️ from Nayan
