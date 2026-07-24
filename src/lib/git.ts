@@ -84,7 +84,15 @@ function authConfig(): string[] {
 }
 
 function git(cwd: string = process.cwd()): SimpleGit {
-  return simpleGit(cwd, { config: authConfig() });
+  // GIT_EDITOR=true: `rebase --continue` and `cherry-pick --continue` open the
+  // configured editor for the commit message; gitto runs git without a TTY, so
+  // that would block forever (or fail on a dumb terminal). `true` accepts
+  // git's prepared message — gitto never wants an interactive editor.
+  // allowUnsafeEditor only permits our own fixed value here, not user input.
+  return simpleGit(cwd, {
+    config: authConfig(),
+    unsafe: { allowUnsafeEditor: true },
+  }).env({ ...process.env, GIT_EDITOR: "true" });
 }
 
 export type InProgressOperation = "merge" | "rebase" | "cherry-pick" | null;
