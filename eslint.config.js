@@ -40,5 +40,18 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  {
+    // One-off dev tooling (e.g. scripts/record-demo.cjs), deliberately
+    // CommonJS since it's simpler than ESM boilerplate for a script nobody
+    // runs as part of the build or test suite.
+    files: ["**/*.cjs"],
+    languageOptions: {
+      globals: { ...globals.node },
+      sourceType: "commonjs",
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
   eslintConfigPrettier,
 );

@@ -11,6 +11,43 @@ with words like `save`, `upload`, `sync`, `branch`, `combine`, and `replay` —
 and every git or GitHub error is translated into a sentence you can act on,
 never raw command output.
 
+![gitto's `/` command palette: a context-aware menu, saving a change, and the result](demo.svg)
+
+## Example
+
+The image above is the interactive `/` palette. gitto also has a plain-text
+mode — used automatically in any terminal without arrow-key support (some CI
+runners, very old terminals) or when input is piped/scripted — that asks the
+exact same questions as typed commands instead. A first run in a brand-new
+project looks like this:
+
+```
+$ gitto
+gitto
+Your terminal doesn't support arrow-key navigation, so gitto is using typed commands instead.
+Type a command and press Enter. Type "help" to see everything, "exit" to quit.
+
+Welcome to gitto. Plain-language Git and GitHub — no jargon required.
+
+You're not connected to GitHub yet. Log in now? [Y/n] y
+Go to https://github.com/login/device and enter this code: ABCD-1234
+Waiting for you to approve in the browser...
+✓ Logged in as yourname.
+
+This folder isn't a git project yet. Set one up? [Y/n] y
+✓ Set up.
+
+gitto> save
+Save everything, or just some files/folders? (leave blank for everything)
+What did you change? initial commit
+✓ Saved 3 files.
+
+gitto> exit
+```
+
+Every command also works directly as an argument (`gitto save`, `gitto
+upload`, ...) without opening either the palette or the `gitto>` prompt.
+
 ## Commands
 
 `login`, `logout`, `upload`, `download <url> [destination]`, `status`, `sync`,
@@ -44,13 +81,28 @@ another line to work with).
 
 ## Install
 
+Requires **Node.js 20 or newer** — check with `node --version`. Install it
+from [nodejs.org](https://nodejs.org) or a version manager such as
+[nvm](https://github.com/nvm-sh/nvm) (macOS/Linux) or
+[Volta](https://volta.sh) (all platforms, including Windows).
+
 ```
 npm install -g @nayanroy/gitto
 ```
 
-Requires Node 20 or newer. This gives you the `gitto` command. `login` ships
-with gitto's own GitHub OAuth App (Device Flow enabled) — no setup required.
-To use your own OAuth App instead, set `GITTO_GITHUB_CLIENT_ID`.
+- **Windows** — works out of the box in PowerShell, Command Prompt, or Windows
+  Terminal with the official Node.js installer or a version manager.
+- **macOS/Linux** — if Node came from your system package manager rather than
+  a version manager, a global install sometimes needs
+  `sudo npm install -g @nayanroy/gitto`. Switching to nvm/Volta avoids needing
+  `sudo` for npm at all.
+- Any terminal without arrow-key support (some CI runners, very old
+  terminals) automatically gets the plain-text fallback instead of the
+  interactive menu — no configuration needed.
+
+This gives you the `gitto` command. `login` ships with gitto's own GitHub
+OAuth App (Device Flow enabled) — no setup required. To use your own OAuth App
+instead, set `GITTO_GITHUB_CLIENT_ID`.
 
 ## Development
 
@@ -63,7 +115,9 @@ npm link   # or: node dist/cli.js <command>
 npm run dev -- status   # runs src/cli.tsx directly via tsx, no build step
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for testing, linting, and PR guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for testing, linting, and PR guidelines,
+and the [Code of Conduct](CODE_OF_CONDUCT.md) for how we expect people to treat
+each other here.
 
 ## Architecture
 
@@ -101,9 +155,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for testing, linting, and PR guidelines.
   (`getRepoState()` in `lib/git.ts`)
 - `src/ui/*.tsx` — reusable prompts (`Select`, `Prompt`, `Confirm`, `Result`,
   `Task`) shared across every command
+- `scripts/record-demo.cjs` — regenerates `demo.svg` above; see the comment
+  at the top of the file for how to run it
 
 Every file above has test coverage — see [CONTRIBUTING.md](CONTRIBUTING.md#tests)
 for how the Ink UI, the plain-text fallback, and the underlying git/GitHub
-logic are each tested.
+logic are each tested. Tested on Linux, Windows, and macOS in CI.
 
 ###### with ❤️ from Nayan
