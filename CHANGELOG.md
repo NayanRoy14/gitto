@@ -1,5 +1,11 @@
 # @nayanroy/gitto
 
+## 0.2.1
+
+### Patch Changes
+
+- b4eb35d: Fix `gitto --version` reporting a stale hardcoded version instead of the installed package's actual version.
+
 ## 0.2.0
 
 ### Minor Changes
