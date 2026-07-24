@@ -52,6 +52,7 @@ export function Tag({ onDone }: TagProps = {}) {
   if (step.kind === "name") {
     return (
       <Prompt
+        key="name"
         message="Name for this tag:"
         placeholder="e.g. v1.0.0"
         onSubmit={(value) => value.trim() && setStep({ kind: "message", name: value.trim() })}
@@ -62,6 +63,7 @@ export function Tag({ onDone }: TagProps = {}) {
   if (step.kind === "message") {
     return (
       <Prompt
+        key="message"
         message="Message for this tag:"
         placeholder={step.name}
         onSubmit={(value) =>
