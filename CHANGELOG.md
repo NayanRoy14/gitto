@@ -1,5 +1,11 @@
 # @nayanroy/gitto
 
+## 0.2.2
+
+### Patch Changes
+
+- 7d19df9: Fix `gitto tag`'s message prompt starting pre-filled with whatever was just typed for the tag name. Both prompts rendered at the same position with no distinguishing key, so React reused the text input's internal state across them instead of resetting it.
+
 ## 0.2.1
 
 ### Patch Changes
