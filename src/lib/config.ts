@@ -33,9 +33,13 @@ export function writeConfig(update: Partial<GittoConfig>): void {
   ensureConfigDir();
   const current = readConfig();
   const next = { ...current, ...update };
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(next, null, 2), {
-    mode: 0o600,
-  });
+  // Write to a temp file and rename over the target instead of writing the
+  // target directly — rename is atomic, so a crash or Ctrl+C mid-write can't
+  // leave config.json truncated (which readConfig's JSON.parse would then
+  // silently swallow, logging the user out with no explanation).
+  const tempFile = `${CONFIG_FILE}.${process.pid}.tmp`;
+  fs.writeFileSync(tempFile, JSON.stringify(next, null, 2), { mode: 0o600 });
+  fs.renameSync(tempFile, CONFIG_FILE);
 }
 
 export function clearConfig(): void {

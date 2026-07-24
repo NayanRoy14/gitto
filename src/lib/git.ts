@@ -83,6 +83,16 @@ function authConfig(): string[] {
   return [`http.extraheader=AUTHORIZATION: basic ${basic}`];
 }
 
+// A stalled connection (e.g. a firewall silently dropping packets, rather
+// than actively refusing them) would otherwise hang the underlying git
+// process forever with no feedback. `--progress` is added to every
+// network-touching call below so a genuinely slow-but-working transfer keeps
+// producing output that resets this timer — only a truly stalled connection
+// gets killed.
+function gitOptions() {
+  return { config: authConfig(), timeout: { block: 30_000 } };
+}
+
 function git(cwd: string = process.cwd()): SimpleGit {
   // GIT_EDITOR=true: `rebase --continue` and `cherry-pick --continue` open the
   // configured editor for the commit message; gitto runs git without a TTY, so
@@ -90,7 +100,7 @@ function git(cwd: string = process.cwd()): SimpleGit {
   // git's prepared message — gitto never wants an interactive editor.
   // allowUnsafeEditor only permits our own fixed value here, not user input.
   return simpleGit(cwd, {
-    config: authConfig(),
+    ...gitOptions(),
     unsafe: { allowUnsafeEditor: true },
   }).env({ ...process.env, GIT_EDITOR: "true" });
 }
@@ -178,6 +188,9 @@ function translateError(err: unknown): string {
   if (/does not have any commits yet|bad default revision|unknown revision/i.test(message)) {
     return "There's nothing saved yet.";
   }
+  if (/block timeout reached/i.test(message)) {
+    return "GitHub took too long to respond. Check your connection and try again.";
+  }
   return "Something went wrong. Please try again.";
 }
 
@@ -198,7 +211,7 @@ export async function upload(cwd: string = process.cwd()): Promise<PushResult> {
 
   if (!status.tracking) {
     try {
-      await repo.push(["-u", "origin", status.current ?? "HEAD"]);
+      await repo.push(["-u", "origin", status.current ?? "HEAD", "--progress"]);
       return { pushed: true, message: "Uploaded to GitHub." };
     } catch (err) {
       throw new GittoGitError(translateError(err));
@@ -210,7 +223,7 @@ export async function upload(cwd: string = process.cwd()): Promise<PushResult> {
   }
 
   try {
-    await repo.push();
+    await repo.push(["--progress"]);
     return { pushed: true, message: "Uploaded to GitHub." };
   } catch (err) {
     throw new GittoGitError(translateError(err));
@@ -223,7 +236,7 @@ export interface CloneResult {
 
 export async function download(url: string, destination?: string): Promise<CloneResult> {
   try {
-    await simpleGit({ config: authConfig() }).clone(url, destination ?? ".");
+    await simpleGit(gitOptions()).clone(url, destination ?? ".", ["--progress"]);
   } catch (err) {
     throw new GittoGitError(translateError(err));
   }
@@ -410,7 +423,7 @@ export async function sync(cwd: string = process.cwd()): Promise<string> {
     if (!before.tracking) {
       return "This project isn't connected to GitHub yet.";
     }
-    const result = await repo.pull();
+    const result = await repo.pull(["--progress"]);
     if (result.files.length === 0 && result.summary.changes === 0) {
       return "Nothing new to bring down — already up to date.";
     }

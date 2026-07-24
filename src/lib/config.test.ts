@@ -70,4 +70,28 @@ describe("config", () => {
     expect(config.readConfig()).toEqual({});
     expect(config.getToken()).toBeUndefined();
   });
+
+  it("writes atomically, leaving no temp file behind", async () => {
+    const config = await import("./config.js");
+    config.writeConfig({ token: "abc123" });
+
+    const files = fs.readdirSync(path.join(tmpHome, ".gitto"));
+    expect(files).toEqual(["config.json"]);
+  });
+
+  it("leaves the previous config intact if a write is interrupted before rename", async () => {
+    const config = await import("./config.js");
+    config.writeConfig({ token: "abc123", login: "nayan" });
+
+    // Simulate a crash between the temp-file write and the rename: leave a
+    // stray, possibly-truncated temp file sitting next to a valid config.
+    fs.writeFileSync(
+      path.join(tmpHome, ".gitto", `config.json.${process.pid}.tmp`),
+      '{"token":"trunc',
+      "utf8",
+    );
+
+    expect(config.getToken()).toBe("abc123");
+    expect(config.getLogin()).toBe("nayan");
+  });
 });

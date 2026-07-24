@@ -34,8 +34,41 @@ export async function getCurrentRepoRef(cwd: string = process.cwd()): Promise<Re
   return ref;
 }
 
+/**
+ * GitHub returns 403 for both rejected credentials and rate limiting (primary
+ * limit: `x-ratelimit-remaining: 0`; secondary/abuse limit: a `retry-after`
+ * header), and 429 for some rate-limited endpoints. Telling a rate-limited
+ * user to re-login would be actively misleading, so this has to be checked
+ * before the generic 401/403 case below.
+ */
+interface RateLimitInfo {
+  limited: boolean;
+  retryAfterSeconds?: number;
+}
+
+function checkRateLimit(err: unknown): RateLimitInfo {
+  const status = (err as { status?: number })?.status;
+  if (status !== 403 && status !== 429) return { limited: false };
+  const headers = (err as { response?: { headers?: Record<string, string> } })?.response?.headers;
+  const message = (err as { message?: string })?.message ?? "";
+  const retryAfter = headers?.["retry-after"];
+  const limited =
+    headers?.["x-ratelimit-remaining"] === "0" ||
+    retryAfter !== undefined ||
+    /rate limit/i.test(message);
+  return limited
+    ? { limited: true, retryAfterSeconds: retryAfter ? Number(retryAfter) : undefined }
+    : { limited: false };
+}
+
 function translateGitHubError(err: unknown): string {
   const status = (err as { status?: number })?.status;
+  const rateLimit = checkRateLimit(err);
+  if (rateLimit.limited) {
+    return rateLimit.retryAfterSeconds
+      ? `GitHub is rate-limiting requests right now. Try again in about ${rateLimit.retryAfterSeconds} seconds.`
+      : "GitHub is rate-limiting requests right now. Wait a bit and try again.";
+  }
   if (status === 401 || status === 403) {
     return "GitHub didn't accept your credentials. Try `gitto login` again.";
   }

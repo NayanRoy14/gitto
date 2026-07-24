@@ -144,6 +144,49 @@ describe("createRepo", () => {
     });
     await expect(createRepo({ name: "x" })).rejects.toBeInstanceOf(GittoGitHubError);
   });
+
+  it("distinguishes a primary rate limit (403 + x-ratelimit-remaining: 0) from a credentials error", async () => {
+    mockGetOctokit.mockReturnValue({
+      repos: {
+        createForAuthenticatedUser: vi.fn().mockRejectedValue({
+          status: 403,
+          response: { headers: { "x-ratelimit-remaining": "0" } },
+        }),
+      },
+    });
+    await expect(createRepo({ name: "x" })).rejects.toThrow(/rate-limiting requests/);
+  });
+
+  it("includes the retry-after duration for a secondary/abuse rate limit", async () => {
+    mockGetOctokit.mockReturnValue({
+      repos: {
+        createForAuthenticatedUser: vi.fn().mockRejectedValue({
+          status: 403,
+          response: { headers: { "retry-after": "42" } },
+        }),
+      },
+    });
+    await expect(createRepo({ name: "x" })).rejects.toThrow(/Try again in about 42 seconds/);
+  });
+
+  it("recognizes a 429 rate-limit response", async () => {
+    mockGetOctokit.mockReturnValue({
+      repos: {
+        createForAuthenticatedUser: vi.fn().mockRejectedValue({
+          status: 429,
+          message: "You have exceeded a secondary rate limit",
+        }),
+      },
+    });
+    await expect(createRepo({ name: "x" })).rejects.toThrow(/rate-limiting requests/);
+  });
+
+  it("still treats a plain 403 with no rate-limit signal as a credentials error", async () => {
+    mockGetOctokit.mockReturnValue({
+      repos: { createForAuthenticatedUser: vi.fn().mockRejectedValue({ status: 403 }) },
+    });
+    await expect(createRepo({ name: "x" })).rejects.toThrow(/didn't accept your credentials/);
+  });
 });
 
 describe("createRequest", () => {
