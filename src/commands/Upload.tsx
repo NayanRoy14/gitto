@@ -22,9 +22,10 @@ export function Upload({ onDone }: UploadProps = {}) {
   useEffect(() => {
     if (step.kind !== "loading") return;
     getRemoteUrl().then((url) => {
-      setStep(url ? { kind: "uploading" } : { kind: "confirm-visibility", name: suggestRepoName() });
+      setStep(
+        url ? { kind: "uploading" } : { kind: "confirm-visibility", name: suggestRepoName() },
+      );
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step.kind]);
 
   if (step.kind === "loading") {
@@ -39,7 +40,9 @@ export function Upload({ onDone }: UploadProps = {}) {
     return (
       <Confirm
         message={`This project isn't on GitHub yet. Create "${step.name}" as a private repo?`}
-        onAnswer={(yes) => setStep({ kind: "uploading", create: { name: step.name, private: yes } })}
+        onAnswer={(yes) =>
+          setStep({ kind: "uploading", create: { name: step.name, private: yes } })
+        }
       />
     );
   }
@@ -49,7 +52,10 @@ export function Upload({ onDone }: UploadProps = {}) {
       label={step.create ? `Creating "${step.create.name}" on GitHub...` : "Uploading to GitHub..."}
       run={async () => {
         if (step.create) {
-          const { url } = await createRepo({ name: step.create.name, private: step.create.private });
+          const { url } = await createRepo({
+            name: step.create.name,
+            private: step.create.private,
+          });
           await addRemote(url);
         }
         const result = await upload();

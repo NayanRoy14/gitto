@@ -29,7 +29,11 @@ export function Combine({ onDone }: CombineProps = {}) {
 
   if (branches.length === 0) {
     return (
-      <Result tone="info" message="There's only one line here — nothing to combine." onDone={onDone} />
+      <Result
+        tone="info"
+        message="There's only one line here — nothing to combine."
+        onDone={onDone}
+      />
     );
   }
 

@@ -38,14 +38,16 @@ export function Save({ onDone }: SaveProps = {}) {
         setStep({ kind: "which-files" });
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step.kind]);
 
   useEffect(() => {
     if (step.kind !== "checking-files") return;
     getSavePreflight(undefined, step.onlyPaths).then((preflight) => {
       if (preflight.hardBlocked.length > 0) {
-        setStep({ kind: "blocked", message: new SensitiveFilesError(preflight.hardBlocked).message });
+        setStep({
+          kind: "blocked",
+          message: new SensitiveFilesError(preflight.hardBlocked).message,
+        });
       } else if (preflight.flagged.length > 0) {
         setStep({ kind: "confirm-exclude", flagged: preflight.flagged, onlyPaths: step.onlyPaths });
       } else {
@@ -65,7 +67,12 @@ export function Save({ onDone }: SaveProps = {}) {
 
   if (step.kind === "continuing") {
     return (
-      <Task label="Continuing..." run={() => save("")} onDone={finish} interactive={Boolean(onDone)} />
+      <Task
+        label="Continuing..."
+        run={() => save("")}
+        onDone={finish}
+        interactive={Boolean(onDone)}
+      />
     );
   }
 
@@ -75,7 +82,12 @@ export function Save({ onDone }: SaveProps = {}) {
         message="What did you change?"
         placeholder="describe your changes"
         onSubmit={(value) =>
-          setStep({ kind: "saving", message: value.trim() || "Merge", excludePaths: [], onlyPaths: [] })
+          setStep({
+            kind: "saving",
+            message: value.trim() || "Merge",
+            excludePaths: [],
+            onlyPaths: [],
+          })
         }
       />
     );
@@ -111,7 +123,7 @@ export function Save({ onDone }: SaveProps = {}) {
             setStep(
               yes
                 ? { kind: "prompt", excludePaths: step.flagged, onlyPaths: step.onlyPaths }
-                : { kind: "confirm-anyway", flagged: step.flagged, onlyPaths: step.onlyPaths }
+                : { kind: "confirm-anyway", flagged: step.flagged, onlyPaths: step.onlyPaths },
             )
           }
         />

@@ -29,7 +29,11 @@ export function Rebase({ onDone }: RebaseProps = {}) {
 
   if (branches.length === 0) {
     return (
-      <Result tone="info" message="There's only one line here — nothing to replay onto." onDone={onDone} />
+      <Result
+        tone="info"
+        message="There's only one line here — nothing to replay onto."
+        onDone={onDone}
+      />
     );
   }
 

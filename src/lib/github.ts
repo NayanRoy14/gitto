@@ -94,7 +94,7 @@ export interface CreateRequestOptions {
 
 export async function createRequest(
   options: CreateRequestOptions,
-  cwd: string = process.cwd()
+  cwd: string = process.cwd(),
 ): Promise<string> {
   const octokit = requireOctokit();
   const { owner, repo } = await getCurrentRepoRef(cwd);
@@ -120,7 +120,7 @@ export interface CreateIssueOptions {
 
 export async function createIssue(
   options: CreateIssueOptions,
-  cwd: string = process.cwd()
+  cwd: string = process.cwd(),
 ): Promise<string> {
   const octokit = requireOctokit();
   const { owner, repo } = await getCurrentRepoRef(cwd);
@@ -150,7 +150,7 @@ export async function forkRepo(cwd: string = process.cwd()): Promise<string> {
 
 export async function addCollaborator(
   username: string,
-  cwd: string = process.cwd()
+  cwd: string = process.cwd(),
 ): Promise<string> {
   const octokit = requireOctokit();
   const { owner, repo } = await getCurrentRepoRef(cwd);

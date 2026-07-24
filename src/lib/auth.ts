@@ -30,11 +30,11 @@ export interface DeviceVerification {
 }
 
 export async function login(
-  onVerification: (info: DeviceVerification) => void
+  onVerification: (info: DeviceVerification) => void,
 ): Promise<{ login: string }> {
   if (!CLIENT_ID) {
     throw new Error(
-      "gitto isn't configured with a GitHub Client ID yet (set GITTO_GITHUB_CLIENT_ID)."
+      "gitto isn't configured with a GitHub Client ID yet (set GITTO_GITHUB_CLIENT_ID).",
     );
   }
 

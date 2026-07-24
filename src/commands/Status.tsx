@@ -7,20 +7,24 @@ function describe(status: Awaited<ReturnType<typeof getStatus>>, secrets: string
   const parts: string[] = [`On "${status.branch}".`];
 
   if (status.changedFiles > 0) {
-    parts.push(`${status.changedFiles} file${status.changedFiles === 1 ? "" : "s"} changed and not yet saved.`);
+    parts.push(
+      `${status.changedFiles} file${status.changedFiles === 1 ? "" : "s"} changed and not yet saved.`,
+    );
   }
 
   if (!status.connectedToGitHub) {
     parts.push("This project isn't connected to GitHub yet.");
   } else if (status.readyToUpload > 0) {
-    parts.push(`${status.readyToUpload} commit${status.readyToUpload === 1 ? "" : "s"} ready to upload.`);
+    parts.push(
+      `${status.readyToUpload} commit${status.readyToUpload === 1 ? "" : "s"} ready to upload.`,
+    );
   } else if (status.changedFiles === 0) {
     parts.push("Everything is up to date — nothing new to upload.");
   }
 
   if (secrets.length > 0) {
     parts.push(
-      `\n⚠ These look like secrets and are already saved to this project's history: ${secrets.join(", ")}. Consider removing and rotating them.`
+      `\n⚠ These look like secrets and are already saved to this project's history: ${secrets.join(", ")}. Consider removing and rotating them.`,
     );
   }
 

@@ -38,7 +38,6 @@ export function createLineReader(): LineReader {
   const onEnd = () => {
     ended = true;
     let resolver: ((line: string | null) => void) | undefined;
-    // eslint-disable-next-line no-cond-assign
     while ((resolver = waitingResolvers.shift())) resolver(null);
   };
 

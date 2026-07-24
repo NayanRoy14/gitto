@@ -33,7 +33,14 @@ import {
   createTag,
   pushTag,
 } from "./git.js";
-import { createRequest, createIssue, forkRepo, addCollaborator, createRepo, suggestRepoName } from "./github.js";
+import {
+  createRequest,
+  createIssue,
+  forkRepo,
+  addCollaborator,
+  createRepo,
+  suggestRepoName,
+} from "./github.js";
 import { buildMenu } from "./menu.js";
 
 type RL = LineReader;
@@ -118,18 +125,24 @@ async function replStatus(): Promise<void> {
     const [status, secrets] = await Promise.all([getStatus(), findTrackedSecrets()]);
     const parts = [`On "${status.branch}".`];
     if (status.changedFiles > 0) {
-      parts.push(`${status.changedFiles} file${status.changedFiles === 1 ? "" : "s"} changed and not yet saved.`);
+      parts.push(
+        `${status.changedFiles} file${status.changedFiles === 1 ? "" : "s"} changed and not yet saved.`,
+      );
     }
     if (!status.connectedToGitHub) {
       parts.push("This project isn't connected to GitHub yet.");
     } else if (status.readyToUpload > 0) {
-      parts.push(`${status.readyToUpload} commit${status.readyToUpload === 1 ? "" : "s"} ready to upload.`);
+      parts.push(
+        `${status.readyToUpload} commit${status.readyToUpload === 1 ? "" : "s"} ready to upload.`,
+      );
     } else if (status.changedFiles === 0) {
       parts.push("Everything is up to date — nothing new to upload.");
     }
     ok(parts.join(" "));
     if (secrets.length > 0) {
-      say(`⚠ These look like secrets and are already saved to this project's history: ${secrets.join(", ")}.`);
+      say(
+        `⚠ These look like secrets and are already saved to this project's history: ${secrets.join(", ")}.`,
+      );
     }
   } catch (err) {
     fail(err);
@@ -192,7 +205,7 @@ async function replUpload(rl: RL): Promise<void> {
     const name = suggestRepoName();
     const makePrivate = await confirmYes(
       rl,
-      `This project isn't on GitHub yet. Create "${name}" as a private repo?`
+      `This project isn't on GitHub yet. Create "${name}" as a private repo?`,
     );
     try {
       const { url } = await createRepo({ name, private: makePrivate });
@@ -356,7 +369,9 @@ async function replHistory(): Promise<void> {
       say("Nothing saved yet.");
       return;
     }
-    entries.forEach((e) => say(`${e.hash}  ${e.message}  — ${e.author}, ${new Date(e.date).toLocaleString()}`));
+    entries.forEach((e) =>
+      say(`${e.hash}  ${e.message}  — ${e.author}, ${new Date(e.date).toLocaleString()}`),
+    );
   } catch (err) {
     fail(err);
   }
@@ -445,7 +460,7 @@ async function printHelp(): Promise<void> {
 export async function runRepl(): Promise<void> {
   say("\x1b[36m%s\x1b[0m".replace("%s", "gitto"));
   say(
-    "Your terminal doesn't support arrow-key navigation, so gitto is using typed commands instead."
+    "Your terminal doesn't support arrow-key navigation, so gitto is using typed commands instead.",
   );
   say('Type a command and press Enter. Type "help" to see everything, "exit" to quit.');
 
@@ -454,15 +469,20 @@ export async function runRepl(): Promise<void> {
   if (!configExists()) {
     say("\nWelcome to gitto. Plain-language Git and GitHub — no jargon required.");
   }
-  if (!isLoggedIn() && (await confirmYes(rl, "\nYou're not connected to GitHub yet. Log in now?"))) {
+  if (
+    !isLoggedIn() &&
+    (await confirmYes(rl, "\nYou're not connected to GitHub yet. Log in now?"))
+  ) {
     await replLogin();
   }
-  if (!(await isGitRepo()) && (await confirmYes(rl, "This folder isn't a git project yet. Set one up?"))) {
+  if (
+    !(await isGitRepo()) &&
+    (await confirmYes(rl, "This folder isn't a git project yet. Set one up?"))
+  ) {
     await initRepo();
     ok("Set up.");
   }
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const line = (await rl.question("\ngitto> ")).trim();
 

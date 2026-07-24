@@ -31,9 +31,11 @@ export function Tag({ onDone }: TagProps = {}) {
     createTag(step.name, step.message)
       .then(() => setStep({ kind: "checking-push", name: step.name }))
       .catch((err: unknown) =>
-        setStep({ kind: "created-error", message: err instanceof Error ? err.message : String(err) })
+        setStep({
+          kind: "created-error",
+          message: err instanceof Error ? err.message : String(err),
+        }),
       );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   useEffect(() => {
@@ -42,10 +44,9 @@ export function Tag({ onDone }: TagProps = {}) {
       setStep(
         state.hasRemote && loggedIn
           ? { kind: "confirm-push", name: step.name }
-          : { kind: "done", name: step.name }
+          : { kind: "done", name: step.name },
       );
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   if (step.kind === "name") {

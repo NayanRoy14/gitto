@@ -52,13 +52,7 @@ interface AppProps {
 }
 
 type Step =
-  | "greeting"
-  | "login"
-  | "repo-check"
-  | "repo-prompt"
-  | "initializing"
-  | "run"
-  | "cancelled";
+  "greeting" | "login" | "repo-check" | "repo-prompt" | "initializing" | "run" | "cancelled";
 
 const NEEDS_REPO: CommandName[] = [
   "upload",
@@ -119,7 +113,7 @@ export function App({ command, url, destination }: AppProps) {
         setTimeout(() => exit(), 50);
       }
     },
-    { isActive: step === "repo-prompt" }
+    { isActive: step === "repo-prompt" },
   );
 
   if (step === "greeting") {

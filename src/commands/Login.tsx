@@ -24,7 +24,6 @@ export function Login({ onComplete }: LoginProps = {}) {
         const message = err instanceof Error ? err.message : String(err);
         setPhase({ kind: "error", message });
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -55,9 +54,14 @@ export function Login({ onComplete }: LoginProps = {}) {
   if (phase.kind === "waiting") {
     return (
       <Box flexDirection="column">
-        <Text>Go to <Text color="cyan">{phase.info.verificationUri}</Text> and enter this code:</Text>
+        <Text>
+          Go to <Text color="cyan">{phase.info.verificationUri}</Text> and enter this code:
+        </Text>
         <Box marginTop={1}>
-          <Text bold color="yellow"> {phase.info.userCode} </Text>
+          <Text bold color="yellow">
+            {" "}
+            {phase.info.userCode}{" "}
+          </Text>
         </Box>
         <Box marginTop={1}>
           <Text color="cyan">

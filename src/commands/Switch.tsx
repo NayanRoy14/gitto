@@ -29,7 +29,11 @@ export function Switch({ onDone }: SwitchProps = {}) {
 
   if (branches.length === 0) {
     return (
-      <Result tone="info" message="There's only one line here — nothing to switch to." onDone={onDone} />
+      <Result
+        tone="info"
+        message="There's only one line here — nothing to switch to."
+        onDone={onDone}
+      />
     );
   }
 

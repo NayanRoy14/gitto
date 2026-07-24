@@ -43,7 +43,6 @@ export function Trash({ onDone }: TrashProps = {}) {
         }
         setStep({ kind: "error", message: err instanceof Error ? err.message : String(err) });
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   if (branches === null || step.kind === "loading") {
@@ -56,7 +55,11 @@ export function Trash({ onDone }: TrashProps = {}) {
 
   if (step.kind === "no-branches") {
     return (
-      <Result tone="info" message="There's only one line here — nothing to trash." onDone={onDone} />
+      <Result
+        tone="info"
+        message="There's only one line here — nothing to trash."
+        onDone={onDone}
+      />
     );
   }
 

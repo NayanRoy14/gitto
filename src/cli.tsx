@@ -127,10 +127,7 @@ program
   .description("See what's been saved")
   .action(inkOrRepl("history", repl.history));
 
-program
-  .command("undo")
-  .description("Undo your last save")
-  .action(inkOrRepl("undo", repl.undo));
+program.command("undo").description("Undo your last save").action(inkOrRepl("undo", repl.undo));
 
 program
   .command("trash")
@@ -147,10 +144,7 @@ program
   .description("Ask to combine your line on GitHub")
   .action(inkOrRepl("request", repl.request));
 
-program
-  .command("issue")
-  .description("Open a GitHub issue")
-  .action(inkOrRepl("issue", repl.issue));
+program.command("issue").description("Open a GitHub issue").action(inkOrRepl("issue", repl.issue));
 
 program
   .command("fork")

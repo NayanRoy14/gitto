@@ -50,6 +50,8 @@ npm link   # or: node dist/cli.js <command>
 npm run dev -- status   # runs src/cli.tsx directly via tsx, no build step
 ```
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for testing, linting, and PR guidelines.
+
 ## Architecture
 
 - `src/lib/config.ts` — token storage at `~/.gitto/config.json` (mode 0600)

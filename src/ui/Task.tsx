@@ -10,9 +10,7 @@ interface TaskProps {
 }
 
 type Phase =
-  | { kind: "loading" }
-  | { kind: "success"; message: string }
-  | { kind: "error"; message: string };
+  { kind: "loading" } | { kind: "success"; message: string } | { kind: "error"; message: string };
 
 export function Task({ label, run, onDone, interactive = false }: TaskProps) {
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });

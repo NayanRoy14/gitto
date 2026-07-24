@@ -5,16 +5,19 @@ import { getToken, getLogin } from "./config.js";
 
 export class GittoGitError extends Error {}
 export class ConflictError extends GittoGitError {
-  constructor(action: string, public readonly files: string[]) {
+  constructor(
+    action: string,
+    public readonly files: string[],
+  ) {
     super(
-      `${action} hit a conflict in ${files.length} file${files.length === 1 ? "" : "s"}: ${files.join(", ")}. Open ${files.length === 1 ? "it" : "them"}, fix the conflict markers, then run \`gitto save\` to continue (or \`gitto undo\` to cancel).`
+      `${action} hit a conflict in ${files.length} file${files.length === 1 ? "" : "s"}: ${files.join(", ")}. Open ${files.length === 1 ? "it" : "them"}, fix the conflict markers, then run \`gitto save\` to continue (or \`gitto undo\` to cancel).`,
     );
   }
 }
 export class SensitiveFilesError extends GittoGitError {
   constructor(public readonly files: string[]) {
     super(
-      `Saving stopped — ${files.length === 1 ? "this looks like a secret" : "these look like secrets"}, so gitto won't save ${files.length === 1 ? "it" : "them"}: ${files.join(", ")}. If this is really meant to be shared, remove it from gitto's protection manually; otherwise keep it out of this project entirely.`
+      `Saving stopped — ${files.length === 1 ? "this looks like a secret" : "these look like secrets"}, so gitto won't save ${files.length === 1 ? "it" : "them"}: ${files.join(", ")}. If this is really meant to be shared, remove it from gitto's protection manually; otherwise keep it out of this project entirely.`,
     );
   }
 }
@@ -30,10 +33,7 @@ const HARD_BLOCK_PATTERNS: RegExp[] = [
 ];
 
 /** Files gitto excludes by default, but will save anyway if the user explicitly says so. */
-const SOFT_EXCLUDE_PATTERNS: RegExp[] = [
-  /(^|\/)node_modules(\/|$)/i,
-  /(^|\/)\.env(\..+)?$/i,
-];
+const SOFT_EXCLUDE_PATTERNS: RegExp[] = [/(^|\/)node_modules(\/|$)/i, /(^|\/)\.env(\..+)?$/i];
 
 export function isHardBlocked(filePath: string): boolean {
   return HARD_BLOCK_PATTERNS.some((pattern) => pattern.test(filePath));
@@ -64,8 +64,12 @@ function appendToGitignore(cwd: string, patterns: string[]): void {
   const separator = existing.length > 0 && !existing.endsWith("\n") ? "\n" : "";
   fs.writeFileSync(
     gitignorePath,
-    existing + separator + "\n# Added by gitto after you chose to exclude these:\n" + toAdd.join("\n") + "\n",
-    "utf8"
+    existing +
+      separator +
+      "\n# Added by gitto after you chose to exclude these:\n" +
+      toAdd.join("\n") +
+      "\n",
+    "utf8",
   );
 }
 
@@ -86,7 +90,7 @@ function git(cwd: string = process.cwd()): SimpleGit {
 export type InProgressOperation = "merge" | "rebase" | "cherry-pick" | null;
 
 export async function getInProgressOperation(
-  cwd: string = process.cwd()
+  cwd: string = process.cwd(),
 ): Promise<InProgressOperation> {
   const repo = git(cwd);
   let gitDir: string;
@@ -138,10 +142,17 @@ function translateError(err: unknown): string {
   if (/non-fast-forward|fetch first|rejected/i.test(message)) {
     return "Someone else has newer changes on GitHub. Update your local copy before uploading again.";
   }
-  if (/no configured push destination|no such remote|origin/i.test(message) && /remote/i.test(message)) {
+  if (
+    /no configured push destination|no such remote|origin/i.test(message) &&
+    /remote/i.test(message)
+  ) {
     return "This project isn't connected to a GitHub repository yet.";
   }
-  if (/local changes.*would be overwritten|overwritten by checkout|overwritten by merge/i.test(message)) {
+  if (
+    /local changes.*would be overwritten|overwritten by checkout|overwritten by merge/i.test(
+      message,
+    )
+  ) {
     return "You have unsaved changes that would be lost. Save or stash them first.";
   }
   if (/branch .* not found|did not match any/i.test(message)) {
@@ -262,7 +273,7 @@ export interface SavePreflight {
 
 export async function getSavePreflight(
   cwd: string = process.cwd(),
-  onlyPaths: string[] = []
+  onlyPaths: string[] = [],
 ): Promise<SavePreflight> {
   const repo = git(cwd);
   let status;
@@ -273,7 +284,7 @@ export async function getSavePreflight(
   }
   const paths = scopeToOnlyPaths(
     status.files.map((f) => f.path),
-    onlyPaths
+    onlyPaths,
   );
   return {
     hardBlocked: paths.filter(isHardBlocked),
@@ -308,7 +319,7 @@ export async function save(
   message: string,
   cwd: string = process.cwd(),
   excludePaths: string[] = [],
-  onlyPaths: string[] = []
+  onlyPaths: string[] = [],
 ): Promise<string> {
   const repo = git(cwd);
   const op = await getInProgressOperation(cwd);
@@ -320,7 +331,10 @@ export async function save(
     } catch (err) {
       const status = await repo.status().catch(() => null);
       if (status && status.conflicted.length > 0) {
-        throw new ConflictError(op === "rebase" ? "Replaying" : "Cherry-picking", status.conflicted);
+        throw new ConflictError(
+          op === "rebase" ? "Replaying" : "Cherry-picking",
+          status.conflicted,
+        );
       }
       throw new GittoGitError(translateError(err));
     }
@@ -349,7 +363,7 @@ export async function save(
 
     const scopedPaths = scopeToOnlyPaths(
       status.files.map((f) => f.path),
-      onlyPaths
+      onlyPaths,
     );
     if (scopedPaths.length === 0) {
       return onlyPaths.length > 0
@@ -484,7 +498,7 @@ export async function pickCommit(hash: string, cwd: string = process.cwd()): Pro
 export async function getBranchHistory(
   branchName: string,
   limit = 15,
-  cwd: string = process.cwd()
+  cwd: string = process.cwd(),
 ): Promise<HistoryEntry[]> {
   const repo = git(cwd);
   try {
@@ -510,7 +524,7 @@ export async function getBranchHistory(
 export async function createTag(
   name: string,
   message: string,
-  cwd: string = process.cwd()
+  cwd: string = process.cwd(),
 ): Promise<string> {
   const repo = git(cwd);
   try {
@@ -538,10 +552,7 @@ export interface HistoryEntry {
   author: string;
 }
 
-export async function getHistory(
-  limit = 15,
-  cwd: string = process.cwd()
-): Promise<HistoryEntry[]> {
+export async function getHistory(limit = 15, cwd: string = process.cwd()): Promise<HistoryEntry[]> {
   const repo = git(cwd);
   try {
     const log = await repo.log({ maxCount: limit });
@@ -592,7 +603,7 @@ export class UnmergedBranchError extends GittoGitError {
 export async function deleteBranch(
   name: string,
   force = false,
-  cwd: string = process.cwd()
+  cwd: string = process.cwd(),
 ): Promise<string> {
   const repo = git(cwd);
   try {

@@ -39,7 +39,9 @@ type Step =
 
 export function Palette() {
   const { exit } = useApp();
-  const [step, setStep] = useState<Step>(configExists() ? { kind: "loading" } : { kind: "greeting" });
+  const [step, setStep] = useState<Step>(
+    configExists() ? { kind: "loading" } : { kind: "greeting" },
+  );
   const [state, setState] = useState<RepoState | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
 

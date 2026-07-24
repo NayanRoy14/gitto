@@ -22,7 +22,7 @@ export function History({ onDone }: HistoryProps = {}) {
     getHistory()
       .then((entries) => setPhase({ kind: "done", entries }))
       .catch((err: unknown) =>
-        setPhase({ kind: "error", message: err instanceof Error ? err.message : String(err) })
+        setPhase({ kind: "error", message: err instanceof Error ? err.message : String(err) }),
       );
   }, []);
 
