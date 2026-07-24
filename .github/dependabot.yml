@@ -12,6 +12,13 @@ updates:
       # once it supports eslint 10.
       - dependency-name: eslint
         update-types: ["version-update:semver-major"]
+      # commander >=15 requires Node >=22.12; we support Node >=20.
+      - dependency-name: commander
+        update-types: ["version-update:semver-major"]
+      # ink >=6 requires React >=19; take deliberately together with a React
+      # major upgrade, not as an automated bump.
+      - dependency-name: ink
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
