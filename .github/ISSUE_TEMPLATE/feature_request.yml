@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest a command, behavior, or plain-language improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem or gap?
+      description: >-
+        What are you trying to do that gitto doesn't support well, or where
+        does the plain-language framing break down?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: >-
+        A new command, a change to an existing one, a clearer message — be as
+        concrete as you can. If you're proposing a new command name, remember
+        gitto avoids git jargon (e.g. "save" instead of "commit").
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you're using today, or other approaches you thought about.
+    validations:
+      required: false

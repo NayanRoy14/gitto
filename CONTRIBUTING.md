@@ -1,5 +1,15 @@
 # Contributing to gitto
 
+Thanks for considering a contribution — gitto is a small project and every
+bit of help (bug reports, docs fixes, new commands) is genuinely useful.
+Everyone participating is expected to follow the
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
+Not sure where to start? Check the [open issues](https://github.com/NayanRoy14/gitto/issues)
+— anything not already assigned is fair game. Small, focused PRs (one
+command, one bug, one doc fix) are much easier to review than large ones; if
+you're planning something bigger, open an issue first to talk it through.
+
 ## Setup
 
 ```
@@ -52,9 +62,9 @@ the user. If you add a new failure path, translate it: extend
 
 ## Tests
 
-Test files are colocated with the code they cover (`foo.ts` → `foo.test.ts`),
-run via `npm test` (Vitest). Two different styles are used depending on what's
-under test:
+Test files are colocated with the code they cover (`foo.ts` → `foo.test.ts`
+or `foo.tsx` → `foo.test.tsx`), run via `npm test` (Vitest). Every file in
+`src/` has coverage; which style to follow depends on what's under test:
 
 - **Pure logic** (e.g. `src/lib/git.sensitive-paths.test.ts`) — plain unit
   tests, no mocking needed.
@@ -62,14 +72,33 @@ under test:
   real temporary git repo created with `simple-git` directly, not mocked. This
   exercises actual git behavior (real conflicts, real merges) instead of
   guessing at simple-git's output shape. `./config.js` is mocked to return no
-  token so tests never touch your real `~/.gitto/config.json`.
+  token so tests never touch your real `~/.gitto/config.json`. New
+  git-affecting logic should follow this pattern rather than mocking
+  `simple-git` — it's less brittle and catches real git behavior changes.
 - **Config storage** (`src/lib/config.test.ts`) — mocks `node:os`'s
   `homedir()` to a temp directory so tests never read or write your real
   config file.
-
-New git-affecting logic should follow the integration-test pattern (real temp
-repo) rather than mocking `simple-git` — it's less brittle and catches real
-git behavior changes.
+- **`repl.ts`** (`src/lib/repl.test.ts`) — every `repl.*` function already
+  takes a `LineReader` as a parameter, so tests drive them with a small
+  `FakeLineReader` (a queued list of canned answers) instead of real stdin.
+  `console.log` is spied on to assert what got printed.
+- **Ink components** (`src/commands/*.test.tsx`) — rendered with
+  `ink-testing-library`. Two timing gotchas that will otherwise produce
+  flaky or silently-dropped-input tests, both addressed by the helpers in
+  `src/testSupport/ink.ts` (excluded from the build):
+  - `settle()` — Ink attaches its raw-mode stdin listener from a `useEffect`,
+    which fires a tick after the initial render commit, not during it. Call
+    this once after `render()` (and again after any step transition that
+    mounts a fresh interactive component) before the first simulated
+    keypress, or that keypress is written before anything is listening.
+  - `pressKey()` / `typeText()` — `stdin.write()` calls fired back-to-back in
+    the same tick get dropped or scrambled by React's batching (each
+    keystroke's handler reads a stale value). These add the same settling
+    tick _after_ every write.
+  - Orchestrator components (`App.tsx`, `Palette.tsx`) are tested by mocking
+    every imported sub-command as a trivial stub, so only the routing/
+    state-machine logic itself is under test — not each command's internals,
+    which already have their own dedicated test file.
 
 ## Releasing (maintainer notes)
 
