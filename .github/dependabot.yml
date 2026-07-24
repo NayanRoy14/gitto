@@ -19,6 +19,14 @@ updates:
       # major upgrade, not as an automated bump.
       - dependency-name: ink
         update-types: ["version-update:semver-major"]
+      # ink 5 predates React 19 and there's no test coverage of the Ink
+      # rendering layer (only lib/git.ts and lib/config.ts are tested), so CI
+      # passing here isn't a real compatibility signal. Bump together with the
+      # ink major above once that migration is deliberately taken on.
+      - dependency-name: react
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
       # typescript-eslint peer-supports typescript <6.1 only; drop this once
       # it accepts newer TypeScript majors.
       - dependency-name: typescript
