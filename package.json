@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@octokit/auth-oauth-device": "^8.0.3",
-    "@octokit/rest": "^21.1.1",
+    "@octokit/rest": "^22.0.1",
     "commander": "^13.1.0",
     "ink": "^5.1.0",
     "ink-select-input": "^6.2.0",
