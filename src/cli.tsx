@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import React from "react";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { render } from "ink";
 import { Command } from "commander";
 import { Login } from "./commands/Login.js";
@@ -8,6 +11,13 @@ import { App } from "./commands/App.js";
 import { Palette } from "./commands/Palette.js";
 import { runRepl, repl } from "./lib/repl.js";
 import { createLineReader, type LineReader } from "./lib/lineReader.js";
+
+const packageJsonPath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "package.json",
+);
+const { version } = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { version: string };
 
 const isInteractive = Boolean(process.stdin.isTTY);
 
@@ -47,7 +57,7 @@ const program = new Command();
 program
   .name("gitto")
   .description("Plain-language Git & GitHub — no jargon required.")
-  .version("0.1.0");
+  .version(version);
 
 program.action(() => {
   if (isInteractive) {
